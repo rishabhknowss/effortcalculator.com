@@ -2,7 +2,7 @@
 
 A modern web application that uses Google's Gemini Vision AI to analyze UML diagrams and automatically calculate software development effort using the Use Case Points (UCP) methodology.
 
-![UML Diagram Analyzer Screenshot](https://example.com/screenshot.png)
+![Screenshot from 2025-05-01 13-46-54](https://github.com/user-attachments/assets/8e2a24cd-8466-4a39-af40-5913d5b7e53a)
 
 ## Table of Contents
 
@@ -235,9 +235,6 @@ Note: The API key is only used server-side for secure API calls to the Gemini se
 - **Estimation Accuracy**: Like all estimation methods, UCP provides an approximation, not an exact prediction
 - **Learning Curve**: The UCP method assumes a learning curve is factored into the productivity rates
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 

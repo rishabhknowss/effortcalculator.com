@@ -22,64 +22,34 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
     { name: "Complex", actors: results.actorCounts.complex, useCases: results.useCaseCounts.complex },
   ]
 
-  // Calculate the maximum value for scaling the bars
-  const maxActorCount = Math.max(...barData.map((item) => item.actors))
-  const maxUseCaseCount = Math.max(...barData.map((item) => item.useCases))
-  const maxBarHeight = 180 // Maximum height for bars in pixels
-
   // Calculate total for pie chart percentages
   const total = pieData.reduce((sum, item) => sum + item.value, 0)
 
-  // Create enhanced pie chart renderer
-  const renderEnhancedPieChart = () => {
-    // Calculate the angles for the pie slices
-    let startAngle = 0
-    const slices = pieData.map((item, index) => {
-      const percentage = item.value / total
-      const angle = percentage * 360
-      const slice = {
-        ...item,
-        startAngle,
-        endAngle: startAngle + angle,
-        percentage,
-      }
-      startAngle += angle
-      return slice
-    })
-
+  // Create simple pie chart renderer
+  const renderSimplePieChart = () => {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center">
         <div className="relative h-64 w-64">
-          <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-            {slices.map((slice, index) => {
-              // Convert angles to radians for SVG arc
-              const startRad = (slice.startAngle * Math.PI) / 180
-              const endRad = (slice.endAngle * Math.PI) / 180
+          {/* Simple pie chart with two segments */}
+          <svg viewBox="0 0 100 100" className="w-full h-full">
+            {/* Background circle */}
+            <circle cx="50" cy="50" r="50" fill="hsl(var(--muted))" />
 
-              // Calculate the SVG arc path
-              const x1 = 50 + 40 * Math.cos(startRad)
-              const y1 = 50 + 40 * Math.sin(startRad)
-              const x2 = 50 + 40 * Math.cos(endRad)
-              const y2 = 50 + 40 * Math.sin(endRad)
+            {/* Actors segment (full circle) */}
+            <circle cx="50" cy="50" r="50" fill="hsl(var(--primary))" />
 
-              // Determine if the arc should take the long path (> 180 degrees)
-              const largeArcFlag = slice.endAngle - slice.startAngle > 180 ? 1 : 0
+            {/* Use Cases segment (partial circle based on proportion) */}
+            <path
+              d={`M 50 50 L 50 0 A 50 50 0 ${pieData[0].value / total > 0.5 ? 1 : 0} 1 ${
+                50 + 50 * Math.sin((pieData[0].value / total) * Math.PI * 2)
+              } ${50 - 50 * Math.cos((pieData[0].value / total) * Math.PI * 2)} Z`}
+              fill="hsl(var(--primary)/0.6)"
+            />
 
-              const pathData = `M 50 50 L ${x1} ${y1} A 40 40 0 ${largeArcFlag} 1 ${x2} ${y2} Z`
+            {/* Inner circle */}
+            <circle cx="50" cy="50" r="25" fill="hsl(var(--card))" />
 
-              return (
-                <motion.path
-                  key={index}
-                  d={pathData}
-                  fill={slice.color}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="drop-shadow-md hover:brightness-110 transition-all cursor-pointer"
-                />
-              )
-            })}
-            <circle cx="50" cy="50" r="25" fill="hsl(var(--card))" className="drop-shadow-inner" />
+            {/* Total value */}
             <text
               x="50"
               y="50"
@@ -92,88 +62,60 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
           </svg>
         </div>
 
-        <div className="flex justify-center mt-6 space-x-6">
+        <div className="flex justify-center mt-6 space-x-8">
           {pieData.map((item, index) => (
-            <motion.div
-              key={index}
-              className="flex items-center"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-            >
-              <div className="w-4 h-4 mr-2 rounded-sm" style={{ backgroundColor: item.color }}></div>
+            <div key={index} className="flex items-center">
+              <div className="w-4 h-4 mr-2 rounded-sm" style={{ backgroundColor: item.color }} />
               <div>
                 <div className="text-sm font-medium">{item.name}</div>
                 <div className="text-xs text-muted-foreground">
                   {item.value} ({Math.round((item.value / total) * 100)}%)
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
     )
   }
 
-  // Create enhanced bar chart renderer
-  const renderEnhancedBarChart = () => (
+  // Create simple bar chart renderer
+  const renderSimpleBarChart = () => (
     <div className="h-full w-full flex flex-col">
       <div className="flex-1 flex items-end justify-around pt-6">
         {barData.map((entry, index) => (
-          <div key={index} className="flex flex-col items-center group">
-            <div className="mb-2 text-xs font-medium opacity-70 group-hover:opacity-100 transition-opacity">
-              {entry.name}
-            </div>
-            <div className="flex space-x-4">
+          <div key={index} className="flex flex-col items-center">
+            <div className="flex space-x-6">
+              {/* Actors bar */}
               <div className="flex flex-col items-center">
-                <motion.div
-                  className="relative flex flex-col items-center"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <motion.div
-                    className="w-12 rounded-t-md bg-gradient-to-t from-primary to-primary/40 shadow-lg hover:shadow-primary/20 transition-all"
-                    style={{ height: `${(entry.actors / maxActorCount) * maxBarHeight}px` }}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${(entry.actors / maxActorCount) * maxBarHeight}px` }}
-                    transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
+                <div className="h-[200px] flex flex-col justify-end">
+                  <div
+                    className="w-16 bg-primary rounded-t-md flex items-end justify-center"
+                    style={{ height: `${Math.max(entry.actors * 30, 5)}px` }}
                   >
-                    <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      {entry.actors}
-                    </div>
-                  </motion.div>
-                </motion.div>
-                <div className="text-xs mt-2 text-primary/80">Actors</div>
+                    <span className="text-white font-medium py-1">{entry.actors}</span>
+                  </div>
+                </div>
+                <div className="text-xs mt-2 text-primary/80 font-medium">Actors</div>
               </div>
 
+              {/* Use Cases bar */}
               <div className="flex flex-col items-center">
-                <motion.div
-                  className="relative flex flex-col items-center"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 + 0.15 }}
-                >
-                  <motion.div
-                    className="w-12 rounded-t-md bg-gradient-to-t from-primary/60 to-primary/20 shadow-lg hover:shadow-primary/10 transition-all"
-                    style={{ height: `${(entry.useCases / maxUseCaseCount) * maxBarHeight}px` }}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${(entry.useCases / maxUseCaseCount) * maxBarHeight}px` }}
-                    transition={{ duration: 0.5, delay: 0.3 + index * 0.1 + 0.15 }}
+                <div className="h-[200px] flex flex-col justify-end">
+                  <div
+                    className="w-16 bg-primary/60 rounded-t-md flex items-end justify-center"
+                    style={{ height: `${Math.max(entry.useCases * 15, 5)}px` }}
                   >
-                    <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 bg-primary/60 text-primary-foreground text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      {entry.useCases}
-                    </div>
-                  </motion.div>
-                </motion.div>
-                <div className="text-xs mt-2 text-primary/60">Use Cases</div>
+                    <span className="text-white font-medium py-1">{entry.useCases}</span>
+                  </div>
+                </div>
+                <div className="text-xs mt-2 text-primary/60 font-medium">Use Cases</div>
               </div>
             </div>
+            <div className="mt-4 text-sm font-medium">{entry.name}</div>
           </div>
         ))}
       </div>
-
-      <div className="h-px w-full bg-border mt-2"></div>
     </div>
   )
 
@@ -305,7 +247,7 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
                 Weight Distribution
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-[350px]">{renderEnhancedPieChart()}</CardContent>
+            <CardContent className="h-[350px]">{renderSimplePieChart()}</CardContent>
           </Card>
         </motion.div>
 
@@ -321,7 +263,7 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
                 Complexity Distribution
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-[350px]">{renderEnhancedBarChart()}</CardContent>
+            <CardContent className="h-[350px]">{renderSimpleBarChart()}</CardContent>
           </Card>
         </motion.div>
       </div>

@@ -29,7 +29,7 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
   const renderSimplePieChart = () => {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center">
-        <div className="relative h-64 w-64">
+        <div className="relative h-64 w-64 border border-primary/10 rounded-full p-2">
           {/* Simple pie chart with two segments */}
           <svg viewBox="0 0 100 100" className="w-full h-full">
             {/* Background circle */}
@@ -47,7 +47,7 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
             />
 
             {/* Inner circle */}
-            <circle cx="50" cy="50" r="25" fill="hsl(var(--card))" />
+            <circle cx="50" cy="50" r="25" fill="hsl(var(--card))" stroke="hsl(var(--primary)/0.1)" strokeWidth="1" />
 
             {/* Total value */}
             <text
@@ -64,7 +64,7 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
 
         <div className="flex justify-center mt-6 space-x-8">
           {pieData.map((item, index) => (
-            <div key={index} className="flex items-center">
+            <div key={index} className="flex items-center border border-primary/10 rounded-md px-3 py-1">
               <div className="w-4 h-4 mr-2 rounded-sm" style={{ backgroundColor: item.color }} />
               <div>
                 <div className="text-sm font-medium">{item.name}</div>
@@ -84,7 +84,10 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
     <div className="h-full w-full flex flex-col">
       <div className="flex-1 flex items-end justify-around pt-6">
         {barData.map((entry, index) => (
-          <div key={index} className="flex flex-col items-center">
+          <div
+            key={index}
+            className="flex flex-col items-center px-4 mx-1 border-r border-l border-dashed border-primary/20 last:border-r-0 first:border-l-0"
+          >
             <div className="flex space-x-6">
               {/* Actors bar */}
               <div className="flex flex-col items-center">
@@ -116,6 +119,9 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
           </div>
         ))}
       </div>
+
+      {/* Add a light horizontal line at the bottom */}
+      <div className="w-full h-px bg-primary/10 mt-4"></div>
     </div>
   )
 

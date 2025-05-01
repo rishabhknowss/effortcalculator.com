@@ -11,10 +11,46 @@ interface ResultsDisplayProps {
 }
 
 export function ResultsDisplay({ results }: ResultsDisplayProps) {
-  const pieData = [
-    { name: "Actors", value: results.uaw, color: "hsl(var(--primary))" },
-    { name: "Use Cases", value: results.uucw, color: "hsl(var(--primary)/0.6)" },
+  // Calculate effort distribution by complexity
+  const actorWeights = {
+    simple: 1,
+    average: 2,
+    complex: 3,
+  }
+
+  const useCaseWeights = {
+    simple: 5,
+    average: 10,
+    complex: 15,
+  }
+
+  // Calculate effort for each complexity level
+  const simpleActorEffort =
+    results.actorCounts.simple * actorWeights.simple * results.productivityFactor * results.tcf * results.ecf
+  const averageActorEffort =
+    results.actorCounts.average * actorWeights.average * results.productivityFactor * results.tcf * results.ecf
+  const complexActorEffort =
+    results.actorCounts.complex * actorWeights.complex * results.productivityFactor * results.tcf * results.ecf
+
+  const simpleUseCaseEffort =
+    results.useCaseCounts.simple * useCaseWeights.simple * results.productivityFactor * results.tcf * results.ecf
+  const averageUseCaseEffort =
+    results.useCaseCounts.average * useCaseWeights.average * results.productivityFactor * results.tcf * results.ecf
+  const complexUseCaseEffort =
+    results.useCaseCounts.complex * useCaseWeights.complex * results.productivityFactor * results.tcf * results.ecf
+
+  // Total actor and use case effort
+  const totalActorEffort = simpleActorEffort + averageActorEffort + complexActorEffort
+  const totalUseCaseEffort = simpleUseCaseEffort + averageUseCaseEffort + complexUseCaseEffort
+
+  // Data for effort distribution pie chart
+  const effortDistributionData = [
+    { name: "Actors", value: totalActorEffort, color: "hsl(var(--primary))" },
+    { name: "Use Cases", value: totalUseCaseEffort, color: "hsl(var(--primary)/0.6)" },
   ]
+
+  // Calculate total for pie chart percentages
+  const totalEffort = effortDistributionData.reduce((sum, item) => sum + item.value, 0)
 
   const barData = [
     { name: "Simple", actors: results.actorCounts.simple, useCases: results.useCaseCounts.simple },
@@ -22,11 +58,8 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
     { name: "Complex", actors: results.actorCounts.complex, useCases: results.useCaseCounts.complex },
   ]
 
-  // Calculate total for pie chart percentages
-  const total = pieData.reduce((sum, item) => sum + item.value, 0)
-
-  // Create simple pie chart renderer
-  const renderSimplePieChart = () => {
+  // Create effort distribution pie chart renderer
+  const renderEffortDistributionChart = () => {
     return (
       <div className="h-full w-full flex flex-col items-center justify-center">
         <div className="relative h-64 w-64 border border-primary/10 rounded-full p-2">
@@ -40,9 +73,9 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
 
             {/* Use Cases segment (partial circle based on proportion) */}
             <path
-              d={`M 50 50 L 50 0 A 50 50 0 ${pieData[0].value / total > 0.5 ? 1 : 0} 1 ${
-                50 + 50 * Math.sin((pieData[0].value / total) * Math.PI * 2)
-              } ${50 - 50 * Math.cos((pieData[0].value / total) * Math.PI * 2)} Z`}
+              d={`M 50 50 L 50 0 A 50 50 0 ${effortDistributionData[0].value / totalEffort > 0.5 ? 1 : 0} 1 ${
+                50 + 50 * Math.sin((effortDistributionData[0].value / totalEffort) * Math.PI * 2)
+              } ${50 - 50 * Math.cos((effortDistributionData[0].value / totalEffort) * Math.PI * 2)} Z`}
               fill="hsl(var(--primary)/0.6)"
             />
 
@@ -55,21 +88,21 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
               y="50"
               textAnchor="middle"
               dominantBaseline="middle"
-              className="fill-current text-3xl font-bold"
+              className="fill-current text-2xl font-bold"
             >
-              {total}
+              {Math.round(totalEffort)}h
             </text>
           </svg>
         </div>
 
         <div className="flex justify-center mt-6 space-x-8">
-          {pieData.map((item, index) => (
+          {effortDistributionData.map((item, index) => (
             <div key={index} className="flex items-center border border-primary/10 rounded-md px-3 py-1">
               <div className="w-4 h-4 mr-2 rounded-sm" style={{ backgroundColor: item.color }} />
               <div>
                 <div className="text-sm font-medium">{item.name}</div>
                 <div className="text-xs text-muted-foreground">
-                  {item.value} ({Math.round((item.value / total) * 100)}%)
+                  {Math.round(item.value)} hrs ({Math.round((item.value / totalEffort) * 100)}%)
                 </div>
               </div>
             </div>
@@ -250,10 +283,10 @@ export function ResultsDisplay({ results }: ResultsDisplayProps) {
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center">
                 <PieChart className="mr-2 h-5 w-5 text-primary" />
-                Weight Distribution
+                Effort Distribution
               </CardTitle>
             </CardHeader>
-            <CardContent className="h-[350px]">{renderSimplePieChart()}</CardContent>
+            <CardContent className="h-[350px]">{renderEffortDistributionChart()}</CardContent>
           </Card>
         </motion.div>
 
